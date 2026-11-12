@@ -25,23 +25,56 @@
 
 ## 安装
 
-要求 DSH `0.1.7+`（在 **0.2.2-rc.1** 上实测）。插件是「宿主 + 浏览器」双半包。
+要求 DSH `0.1.7+`（在 **0.2.2-rc.1** 上实测）。插件是「宿主 + 浏览器」双半包，
+仓库里已经是可直接加载的产物（`index.js` / `client.js` / `cordis.patch.yml`），**无需构建**。
+
+### 方式一：直接从 GitHub 仓库安装（推荐）
 
 ```bash
-# 1. 把仓库放到一个稳定目录（profile 以 link 方式安装，目录不能删/移）
+dsh plugin --profile desktop add github:lx000166/dsh-opencode-go-usage
+```
+
+pnpm 会拉取仓库默认分支，并把依赖钉到安装当时的 commit（写进 `pnpm-lock.yaml`），
+所以同一份 lockfile 重装得到的是同一个版本。
+
+**网络前提**：pnpm 拉 GitHub 走的是 `git`。如果网络直连 `github.com:443` 不通
+（例如公司网络），需要给这次命令带上代理环境变量：
+
+```bash
+HTTPS_PROXY=http://127.0.0.1:7690 HTTP_PROXY=http://127.0.0.1:7690 \
+  dsh plugin --profile desktop add github:lx000166/dsh-opencode-go-usage
+```
+
+把 `127.0.0.1:7690` 换成你自己的 HTTP 代理端口。
+
+> ⚠️ 不建议在「插件」面板里用 GitHub 地址安装：DSH 插件管理器对 GitHub 源有一次
+> **5 秒硬超时的 git 探测**，网络稍慢就会中止；命令行 `dsh plugin add` 不受此限制。
+
+**升级**：本插件不会自动更新。重新执行一次同样的 `add` 即可；需要锁定某个版本时
+改成 `github:lx000166/dsh-opencode-go-usage#<commit 或 tag>`。
+
+### 方式二：本地目录安装（开发 / 调试）
+
+```bash
 git clone https://github.com/lx000166/dsh-opencode-go-usage.git
-cd dsh-opencode-go-usage
-
-# 2. 装进目标 profile（会同时写入依赖与 dsh.profile.bundles）
-dsh plugin --profile desktop add "$(pwd)"
+dsh plugin --profile desktop add /path/to/dsh-opencode-go-usage
 ```
 
-如果 `dsh plugin add` 之后 `dsh.profile.bundles` 里没有出现 `dsh-opencode-go-usage`
-（依赖已存在时 CLI 不会重复追加），手工在 profile 的 `package.json` 末尾补一项：
+profile 会以 **link** 方式引用该目录（`node_modules` 里是指向它的链接），
+**目录不能删/移**，否则启动时这个 bundle 会被跳过。
+适合边改 `client.js` 边刷新看效果（DSH 的 `client-hmr` 会重组浏览器端）。
 
-```json
-"dsh": { "profile": { "bundles": [ "...", "dsh-opencode-go-usage" ] } }
-```
+### 两种方式共同的收尾
+
+1. `dsh plugin add` 会同时写入依赖和 profile 的 `dsh.profile.bundles`。
+   如果该依赖**本来就在**（例如先手动装过），CLI 不会重复追加 bundle 项，需要手工补：
+
+   ```json
+   "dsh": { "profile": { "bundles": [ "...", "dsh-opencode-go-usage" ] } }
+   ```
+
+2. 按下一节配置 API Key。
+3. **重启一次 DSH**（宿主半从新位置加载），浏览器端刷新页面即可。
 
 ### 配置 API Key
 
