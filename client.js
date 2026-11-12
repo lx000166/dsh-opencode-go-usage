@@ -256,7 +256,14 @@ window.__ModuleLoader__.load({
       };
     }
 
+    /**
+     * Locate the composer's primary submit button. Only the chat composer is
+     * searched: pages without it (settings, panels) must hide the ring instead
+     * of anchoring it to an unrelated button near the viewport bottom.
+     */
     function findSendButton() {
+      const card = document.querySelector("[data-composer-card]");
+      if (!card) return null;
       const selectors = [
         'button[aria-label*="send" i]',
         'button[aria-label*="发送" i]',
@@ -267,51 +274,21 @@ window.__ModuleLoader__.load({
         'button[type="submit"]',
       ];
       for (const selector of selectors) {
+        let elements;
         try {
-          const elements = document.querySelectorAll(selector);
-          for (const el of elements) {
-            const rect = el.getBoundingClientRect();
-            if (
-              rect.width >= 24 &&
-              rect.height >= 24 &&
-              window.innerHeight - rect.bottom < 300
-            ) {
-              return el;
-            }
-          }
+          elements = card.querySelectorAll(selector);
         } catch (error) {
-          // invalid selector — skip
+          continue;
+        }
+        for (const el of elements) {
+          const rect = el.getBoundingClientRect();
+          if (rect.width >= 24 && rect.height >= 24) return el;
         }
       }
-      // Locale-independent fallback: the composer card carries
-      // data-composer-card and the primary submit button is its last
-      // aria-labelled button.
-      try {
-        const composer = document.querySelector("[data-composer-card]");
-        if (composer) {
-          const labelled = Array.from(
-            composer.querySelectorAll("button[aria-label]"),
-          );
-          if (labelled.length > 0) {
-            const el = labelled[labelled.length - 1];
-            const rect = el.getBoundingClientRect();
-            if (rect.width >= 24 && rect.height >= 24) return el;
-          }
-        }
-      } catch (error) {
-        // composer card absent — fall through
-      }
-      const buttons = Array.from(document.querySelectorAll("button")).filter(
-        (button) => {
-          const rect = button.getBoundingClientRect();
-          return (
-            rect.width >= 24 &&
-            rect.height >= 24 &&
-            window.innerHeight - rect.bottom < 300
-          );
-        },
-      );
-      return buttons.length > 0 ? buttons[buttons.length - 1] : null;
+      // Locale-independent fallback: the primary submit button is the last
+      // aria-labelled button inside the composer card.
+      const labelled = Array.from(card.querySelectorAll("button[aria-label]"));
+      return labelled.length > 0 ? labelled[labelled.length - 1] : null;
     }
 
     function ringStrokeFor(tone) {
@@ -412,7 +389,13 @@ window.__ModuleLoader__.load({
         let lastKey = "";
         const loop = () => {
           raf = window.requestAnimationFrame(loop);
-          if (!button || !button.isConnected) button = findSendButton();
+          if (
+            !button ||
+            !button.isConnected ||
+            !button.closest("[data-composer-card]")
+          ) {
+            button = findSendButton();
+          }
           if (!button) {
             if (lastKey !== "none") {
               lastKey = "none";
@@ -421,6 +404,13 @@ window.__ModuleLoader__.load({
             return;
           }
           const rect = button.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) {
+            if (lastKey !== "none") {
+              lastKey = "none";
+              setBox(null);
+            }
+            return;
+          }
           const radius = readButtonRadius(button, rect);
           const key =
             rect.left +
