@@ -1,7 +1,7 @@
 {
   "name": "dsh-opencode-go-usage",
   "version": "2.0.1",
-  "description": "DeepSeek Harness plugin: live OpenCode Go usage widget pinned to the bottom-right corner of the chat UI with 30s auto-refresh. Redevelopment of xiaoqi20/dsh-opencode-go-usage.",
+  "description": "DSH (DeepSeek Harness) plugin: an OpenCode GO monthly usage meter beside the composer context ring, a 5h ring around the send button, and a usage panel with a refresh-interval slider. Adapted from Tsunamistr/dsh-opencode-go-usage for DSH 0.2.x.",
   "license": "MIT",
   "keywords": [
     "deepseek-harness",
@@ -41,5 +41,13 @@
       ],
       "immediately": true
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lx000166/dsh-opencode-go-usage.git"
+  },
+  "homepage": "https://github.com/lx000166/dsh-opencode-go-usage#readme",
+  "bugs": {
+    "url": "https://github.com/lx000166/dsh-opencode-go-usage/issues"
   }
 }
