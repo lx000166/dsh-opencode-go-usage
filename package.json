@@ -1,0 +1,45 @@
+{
+  "name": "dsh-opencode-go-usage",
+  "version": "2.0.1",
+  "description": "DeepSeek Harness plugin: live OpenCode Go usage widget pinned to the bottom-right corner of the chat UI with 30s auto-refresh. Redevelopment of xiaoqi20/dsh-opencode-go-usage.",
+  "license": "MIT",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "plugin",
+    "opencode",
+    "opencode-go",
+    "usage",
+    "quota",
+    "widget"
+  ],
+  "type": "module",
+  "main": "./index.js",
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh": ">=0.1.7-rc.1 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale"
+      ],
+      "immediately": true
+    }
+  }
+}

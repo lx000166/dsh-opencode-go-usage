@@ -1,0 +1,12 @@
+# dsh-opencode-go-usage — profile bundle patch.
+#
+# DSH 0.2.x composes a profile from bundle patch layers: every package listed
+# in `dsh.profile.bundles` must declare `dsh.bundle.patch` and insert its own
+# loader row here. Without this file the launcher skips the bundle with
+# "declares no dsh.bundle in its package.json".
+#
+# `name` must be the package's resolvable module specifier from the profile
+# directory (pnpm links register the package under its manifest name).
+- insert:
+    - id: opencode-go-usage
+      name: dsh-opencode-go-usage
