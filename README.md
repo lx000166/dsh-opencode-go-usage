@@ -119,7 +119,9 @@ profile 会以 **link** 方式引用该目录（`node_modules` 里是指向它�
 
 ## 兼容性
 
-- 实测：DSH **0.2.2-rc.1**（桌面打包版，`desktop` profile）
+- 实测：DSH **0.2.2-rc.1**、**0.2.2-rc.3**（桌面打包版，`desktop` profile）
+- 注：rc.3 移除了 primitives 的 `useAnchoredPosition`（官方面板改用 CSS Anchor Positioning），
+  本插件的面板定位改为按用量环自身 `getBoundingClientRect()` 计算，不依赖该原语
 - 声明范围：`>=0.1.7-rc.1 <0.3.0`（0.2.x 全系）
 - 平台：Web（`dsh.client.platform: "web"`）
 

@@ -26,7 +26,6 @@ window.__ModuleLoader__.load({
     const primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 
     const Tooltip = primitives.Tooltip;
-    const useAnchoredPosition = primitives.useAnchoredPosition;
     const useDismissOnOutsidePointer = primitives.useDismissOnOutsidePointer;
 
     const NS = "opencodeGoUsageWidget";
@@ -614,14 +613,34 @@ window.__ModuleLoader__.load({
         return () => document.removeEventListener("keydown", onKeyDown);
       }, [open]);
 
-      const position = useAnchoredPosition({
-        open,
-        anchorRef: rootRef,
-        panelRef,
-        side: "top",
-        gap: 8,
-        margin: 12,
-      });
+      // DSH 0.2.2-rc.3 dropped the primitives' useAnchoredPosition (its own
+      // context meter moved to CSS anchor positioning). Place the panel from
+      // the meter's own rect instead, so this keeps working across releases.
+      const [pos, setPos] = React.useState(null);
+      React.useEffect(() => {
+        if (!open) return;
+        const place = () => {
+          const el = rootRef.current;
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          const width = 280;
+          const left = Math.max(
+            12,
+            Math.min(
+              rect.left + rect.width / 2 - width / 2,
+              window.innerWidth - width - 12,
+            ),
+          );
+          setPos({ left, bottom: window.innerHeight - rect.top + 8 });
+        };
+        place();
+        window.addEventListener("resize", place);
+        window.addEventListener("scroll", place, true);
+        return () => {
+          window.removeEventListener("resize", place);
+          window.removeEventListener("scroll", place, true);
+        };
+      }, [open]);
       useDismissOnOutsidePointer(rootRef, open, setOpen, panelRef);
 
       if (!anchor) return null;
@@ -763,7 +782,7 @@ window.__ModuleLoader__.load({
             {
               ref: panelRef,
               className: "ogw-panel",
-              style: position ?? { visibility: "hidden", left: 0, top: 0 },
+              style: pos ?? { visibility: "hidden", left: 0, bottom: 0 },
               role: "dialog",
               "aria-label": t("title"),
             },
