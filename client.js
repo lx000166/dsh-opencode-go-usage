@@ -63,6 +63,8 @@ window.__ModuleLoader__.load({
       "poll.60000": "1 分钟",
       "poll.120000": "2 分钟",
       "poll.300000": "5 分钟",
+      periodEnd: "本期到 {date}",
+      periodHint: "按月窗口推算",
     };
 
     const EN = {
@@ -89,6 +91,8 @@ window.__ModuleLoader__.load({
       "poll.60000": "1m",
       "poll.120000": "2m",
       "poll.300000": "5m",
+      periodEnd: "Period ends {date}",
+      periodHint: "inferred from the monthly window",
     };
 
     const CSS = [
@@ -122,6 +126,8 @@ window.__ModuleLoader__.load({
       ".ogw-tone-none{background:var(--dsw-alias-label-tertiary)}",
       ".ogw-dot{width:8px;height:8px;border-radius:50%;flex:none}",
       ".ogw-meta{display:flex;justify-content:space-between;color:var(--dsw-alias-label-tertiary);font-size:10px}",
+      ".ogw-period{display:flex;justify-content:space-between;gap:8px;padding:0 0 8px;color:var(--dsw-alias-label-secondary);font-size:11px}",
+      ".ogw-period-hint{color:var(--dsw-alias-label-tertiary)}",
       ".ogw-foot{display:flex;justify-content:space-between;padding:7px 0 0;border-top:1px solid var(--dsw-alias-border-l2,rgba(15,17,21,.1));color:var(--dsw-alias-label-tertiary);font-size:10px}",
       ".ogw-status{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:2px 0 6px}",
       ".ogw-error{color:var(--dsw-alias-state-error-primary,#e5484d);font-size:11px;line-height:1.5}",
@@ -161,6 +167,24 @@ window.__ModuleLoader__.load({
       const hh = String(d.getHours()).padStart(2, "0");
       const mi = String(d.getMinutes()).padStart(2, "0");
       return d.getMonth() + 1 + "/" + d.getDate() + " " + hh + ":" + mi;
+    }
+
+    function fmtDateTime(iso) {
+      if (!iso) return null;
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return null;
+      const pad = (n) => String(n).padStart(2, "0");
+      return (
+        d.getFullYear() +
+        "/" +
+        pad(d.getMonth() + 1) +
+        "/" +
+        pad(d.getDate()) +
+        " " +
+        pad(d.getHours()) +
+        ":" +
+        pad(d.getMinutes())
+      );
     }
 
     function readPoll() {
@@ -657,6 +681,9 @@ window.__ModuleLoader__.load({
       );
       const pollIndex = Math.max(0, POLLS.indexOf(state.pollMs));
       const pollLabel = t("poll." + state.pollMs);
+      const periodText = fmtDateTime(
+        usage && usage.monthly ? usage.monthly.resetsAt : null,
+      );
 
       let body;
       if (state.kind === "loading") {
@@ -810,6 +837,21 @@ window.__ModuleLoader__.load({
               ),
             ),
             body,
+            periodText &&
+              React.createElement(
+                "div",
+                { className: "ogw-period" },
+                React.createElement(
+                  "span",
+                  null,
+                  t("periodEnd").replace("{date}", periodText),
+                ),
+                React.createElement(
+                  "span",
+                  { className: "ogw-period-hint" },
+                  t("periodHint"),
+                ),
+              ),
             poll,
             React.createElement(
               "div",
